@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 
 import altair as alt
@@ -120,11 +121,14 @@ min_date = form["timestamp"].min().date()
 max_date = form["timestamp"].max().date()
 start = st.sidebar.date_input("Desde (fecha)", value=min_date, min_value=min_date, max_value=max_date,
                               key=f"from_{hash(link)}",
-                              help="Se conservan las respuestas con fecha igual o posterior.")
+                              help="Se conservan las respuestas desde esta fecha y hora (ver «Desde (hora)»).")
+start_time = st.sidebar.time_input("Desde (hora)", value=dt.time(0, 0), step=300, key=f"time_{hash(link)}",
+                                   help="Se aplica a la fecha «Desde»: útil para separar secciones del mismo día.")
+start_dt = dt.datetime.combine(start, start_time)
 MIN_RATINGS = int(st.sidebar.number_input("Mínimo de películas calificadas", 1, N_FORM_MOVIES,
                                           min(4, N_FORM_MOVIES)))
 
-ratings, kept_ts = U.build_ratings(form, start, MIN_RATINGS)
+ratings, kept_ts = U.build_ratings(form, start_dt, MIN_RATINGS)
 if len(ratings) < 3:
     st.error("Con estos filtros quedan menos de 3 estudiantes. Cambia la fecha o el mínimo de calificaciones.")
     st.stop()
@@ -139,6 +143,14 @@ st.sidebar.markdown(
     f"**{len(users)}** estudiantes · **{len(MOVIES)}** películas · "
     f"**{np.mean(~np.isnan(R)):.0%}** de celdas calificadas  \n"
     f"Respuestas del {kept_ts.min():%d-%m-%Y} al {kept_ts.max():%d-%m-%Y}")
+
+st.sidebar.download_button(
+    "⬇️ Descargar calificaciones (Excel)",
+    U.ratings_to_excel(ratings, U.english_titles(MOVIES, movie_map)),
+    f"calificaciones_desde_{start_dt:%Y-%m-%d_%H%M}.xlsx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_ratings",
+    help="Una fila por estudiante y una columna por película (1 a 5, vacío = no la vio), con la fecha "
+         "y hora «Desde» y el mínimo de películas calificadas aplicados. Incluye los nombres.")
 
 movie_table = pd.DataFrame({"Película": MOVIES,
                             "Calificaciones": ratings.notna().sum().to_numpy(),

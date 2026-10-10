@@ -267,3 +267,46 @@ def recommend_for_student(wide, form_ids, cand_ids, student_ratings, k, min_comm
     near = (pd.DataFrame({"userId": pool.index, "distance": d, "common": shared})
             .sort_values("distance", kind="stable").reset_index(drop=True))
     return out, near
+
+
+# --------------------------------------------------------------------------- export
+
+def english_titles(movies, movie_map):
+    """Display titles for the export: English title if the movie is in movie_map, else as written in the form."""
+    eng = {t.strip().lower(): s for t, s in zip(movie_map["form_title"], movie_map["short_title"])}
+    return [eng.get(m.strip().lower(), m) for m in movies]
+
+
+def ratings_to_excel(ratings, titles):
+    """Users x movies ratings -> .xlsx bytes (header 'Student' + titles, blue header, blanks = not seen)."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Ratings"
+    ws.append(["Student"] + list(titles))
+    for name, row in zip(ratings.index, ratings.to_numpy(dtype=float)):
+        ws.append([name] + [None if np.isnan(v) else int(v) for v in row])
+
+    thin = Side(style="thin", color="D0D7DE")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    head_fill = PatternFill("solid", start_color="1F4E79")
+    for c in ws[1]:
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = head_fill
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.border = border
+    ws.row_dimensions[1].height = 45
+    for row in ws.iter_rows(min_row=2):
+        for c in row:
+            c.border = border
+            if c.column > 1:
+                c.alignment = Alignment(horizontal="right")
+    ws.column_dimensions["A"].width = max(12, min(40, max(len(str(n)) for n in ratings.index) + 2))
+    for j in range(2, len(titles) + 2):
+        ws.column_dimensions[ws.cell(1, j).column_letter].width = 12
+    ws.freeze_panes = "B2"
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()

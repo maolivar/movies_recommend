@@ -134,8 +134,9 @@ s += [P("4. Paso 3: cargar los datos en la aplicación", h2),
       bullets(["Pegue el enlace en el cuadro <b>«Enlace a la hoja de respuestas»</b> de la barra lateral.",
                "Revise el resumen de la barra lateral: número de estudiantes, de películas, porcentaje de "
                "celdas calificadas y rango de fechas.",
-               "<b>Desde (fecha):</b> conserva solo las respuestas a partir de esa fecha (útil para ignorar "
-               "semestres anteriores si reutiliza el mismo formulario).",
+               "<b>Desde (fecha) y Desde (hora):</b> conservan solo las respuestas a partir de esa fecha y hora "
+               "(por defecto 00:00). Sirven para ignorar semestres anteriores si reutiliza el formulario, o para "
+               "separar secciones que responden el mismo día: fije la hora de inicio de la sección.",
                "<b>Mínimo de películas calificadas:</b> excluye a quienes calificaron muy pocas películas "
                "(por defecto 4).",
                "<b>Recargar datos:</b> vuelve a leer la hoja para incluir respuestas nuevas. La aplicación también "
@@ -143,6 +144,10 @@ s += [P("4. Paso 3: cargar los datos en la aplicación", h2),
                "Si aparece un cuadro de <b>«Avisos al leer la hoja»</b>, indica columnas o valores que no se "
                "pudieron interpretar (por ejemplo, una columna de correo electrónico). Se ignoran, pero conviene "
                "revisar que no sea una película."], numbered=True),
+      P("<b>Descargar calificaciones:</b> el botón de la barra lateral descarga un archivo Excel (.xlsx) con una fila por estudiante "
+        "y una columna por película (títulos en inglés si la película está en el mapeo del curso; 1 a 5; vacío = no la vio), aplicando la fecha y hora «Desde» y el mínimo de "
+        "películas calificadas. Incluye los nombres: anonimícelos antes de compartir el archivo con los "
+        "estudiantes."),
       P("En la barra lateral, el recuadro <b>«Películas del formulario»</b> muestra cada película con su número de "
         "calificaciones y su promedio, y permite descargar la lista de nombres (ver sección 6). El recuadro "
         "<b>«Estructura requerida del formulario»</b> resume lo explicado en el Paso 1.")]
